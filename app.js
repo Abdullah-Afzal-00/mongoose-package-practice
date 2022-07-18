@@ -1,41 +1,34 @@
-const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost:27017/Test_DB");
+const express = require("express");
+require("./config");
+const aCollection = require("./firstCollection");
 
-console.log(mongoose.connection.readyState);
-const dataSchema = new mongoose.Schema({
-  name: String,
-  class: String,
-});
-const saveinDB = async () => {
-  const fistCollectionModel = mongoose.model("firstCollection", dataSchema);
-  let data = new fistCollectionModel({ name: "ali", class: "meta" });
+const app = express();
+
+app.use(express.json());
+
+app.post("/create", async (req, res, next) => {
+  let data = new aCollection(req.body);
   let result = await data.save();
+  console.log(req.body);
   console.log(result);
-};
+  res.send(result);
+});
 
-const updateinDB = async () => {
-  const fistCollectionModel = mongoose.model("firstCollection", dataSchema);
-  let data = await fistCollectionModel.updateOne(
-    { name: "ali" },
-    { $set: { class: "cool", name: "arshad" } }
-  );
-  console.log(data);
-};
+app.get("/list", async (req, res, next) => {
+  let data = await aCollection.find();
+  res.send(data);
+});
 
-const deleteinDB = async () => {
-  const firstCollectionModel = mongoose.model("firstCollection", dataSchema);
-  let data = await firstCollectionModel.deleteOne({
-    name: "ali",
-  });
-  console.log(data);
-};
+app.delete("/delete/:_id", async (req, res, next) => {
+  console.log(req.params._id);
+  let data = await aCollection.deleteOne(req.params);
+  res.send(data);
+});
 
-const findinDB = async () => {
-  const fistCollectionModel = mongoose.model("firstCollection", dataSchema);
-  let data = await fistCollectionModel.find({ name: "arshad" });
-  console.log(data);
-};
+app.put("/update/:_id", async (req, res, next) => {
+  console.log(req.params._id);
+  let data = await aCollection.update(req.params, { $set: req.body });
+  res.send(data);
+});
 
-//saveinDB();
-//updateinDB();
-findinDB();
+app.listen("3000", () => console.log("App is listening on 3000"));
