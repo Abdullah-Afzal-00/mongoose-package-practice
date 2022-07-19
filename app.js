@@ -1,11 +1,19 @@
 const express = require("express");
 const multer = require("multer");
+const EventEmitter = require("events");
 require("./config");
 const aCollection = require("./firstCollection");
 
 const app = express();
+const event = new EventEmitter();
 
 app.use(express.json());
+
+let count = 0;
+event.on("countAPI", () => {
+  count++;
+  console.log("Event Occured", count);
+});
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -33,6 +41,7 @@ app.post("/create", async (req, res, next) => {
 app.get("/list", async (req, res, next) => {
   let data = await aCollection.find();
   res.send(data);
+  event.emit("countAPI");
 });
 
 app.delete("/delete/:_id", async (req, res, next) => {
